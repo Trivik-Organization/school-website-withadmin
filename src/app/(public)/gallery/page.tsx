@@ -1,135 +1,78 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-interface MediaItem {
+type GalleryItem = {
   id: number;
   type: string;
   url: string;
   caption: string | null;
   category: string;
-  createdAt: string;
-}
+};
 
 export default function GalleryPage() {
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
 
   useEffect(() => {
     fetch("/api/gallery")
       .then((res) => res.json())
-      .then((data) => {
-        setMedia(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch gallery:", err);
-        setLoading(false);
-      });
+      .then((data) => setItems(data));
   }, []);
 
-  // Filter items
-  const filteredMedia = media.filter((item) => {
-    const matchesType = selectedType === "all" || item.type === selectedType;
-    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-    return matchesType && matchesCategory;
+  const categories = ["all", ...Array.from(new Set(items.map((i) => i.category)))];
+
+  const filtered = items.filter((item) => {
+    const typeMatch = typeFilter === "all" || item.type === typeFilter;
+    const categoryMatch = categoryFilter === "all" || item.category === categoryFilter;
+    return typeMatch && categoryMatch;
   });
 
-  // Extract unique categories
-  const categories = ["all", ...Array.from(new Set(media.map((item) => item.category)))];
-
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-      <h1>School Photo & Video Gallery</h1>
-      <p style={{ color: "#666", marginBottom: "25px" }}>
-        Browse campus highlights, classrooms, sports meets, and student events.
-      </p>
+    <div>
+      <h1 className="text-3xl font-bold text-[#1e3a5f] mb-8 border-b-4 border-[#d4a017] inline-block pb-2">
+        Gallery
+      </h1>
 
-      {/* Filter Tabs */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "25px" }}>
-        {/* Type Filter */}
+      <div className="flex flex-wrap gap-4 mb-8">
         <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
-          style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm"
         >
           <option value="all">All Types</option>
           <option value="photo">Photos</option>
           <option value="video">Videos</option>
         </select>
 
-        {/* Category Filter */}
         <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc" }}
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-2 text-sm"
         >
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat === "all" ? "All Categories" : cat}
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c === "all" ? "All Categories" : c}
             </option>
           ))}
         </select>
       </div>
 
-      {loading ? (
-        <p>Loading media assets...</p>
-      ) : filteredMedia.length === 0 ? (
-        <p>No media items found matching the filters.</p>
+      {filtered.length === 0 ? (
+        <p className="text-gray-500">No media found.</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-          {filteredMedia.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                overflow: "hidden",
-                backgroundColor: "#fff",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              {/* Media element */}
-              <div style={{ height: "180px", backgroundColor: "#f0f0f0", position: "relative" }}>
-                {item.type === "photo" ? (
-                  <img
-                    src={item.url}
-                    alt={item.caption || "Gallery Photo"}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <iframe
-                    src={item.url}
-                    title={item.caption || "Gallery Video"}
-                    style={{ width: "100%", height: "100%", border: "none" }}
-                    allowFullScreen
-                  />
-                )}
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    left: "10px",
-                    backgroundColor: "rgba(0,0,0,0.7)",
-                    color: "#fff",
-                    padding: "3px 6px",
-                    borderRadius: "4px",
-                    fontSize: "0.7rem",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {item.category}
-                </span>
-              </div>
-
-              {/* Caption */}
-              <div style={{ padding: "12px", flex: 1, display: "flex", alignItems: "center" }}>
-                <p style={{ margin: 0, fontSize: "0.9rem", color: "#333", fontWeight: "medium" }}>
-                  {item.caption || "No description provided."}
-                </p>
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {filtered.map((item) => (
+            <div key={item.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+              {item.type === "photo" ? (
+                <img src={item.url} alt={item.caption || ""} className="w-full h-48 object-cover" />
+              ) : (
+                <video src={item.url} controls className="w-full h-48 object-cover" />
+              )}
+              <div className="p-3">
+                <p className="text-sm text-gray-700">{item.caption}</p>
+                <p className="text-xs text-gray-400 mt-1">{item.category}</p>
               </div>
             </div>
           ))}

@@ -1,111 +1,80 @@
-import { getSessionUser } from "@/lib/auth";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import React from "react";
 
-export const revalidate = 0;
+const navItems = [
+  { href: "/admin/dashboard", label: "Dashboard", icon: "📊" },
+  { href: "/admin/notices", label: "Notices", icon: "📌" },
+  { href: "/admin/events", label: "Events", icon: "📅" },
+  { href: "/admin/blog", label: "Blog", icon: "📝" },
+  { href: "/admin/gallery", label: "Gallery", icon: "🖼️" },
+  { href: "/admin/inquiries", label: "Inquiries", icon: "✉️" },
+];
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const user = await getSessionUser();
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/admin/login";
+  const [checking, setChecking] = useState(!isLoginPage);
 
-  // In case proxy protection didn't catch it, double check server-side
-  // Note: /admin/login is also matching this layout, so we must exclude it from redirection!
-  // To keep it simple, if user is not logged in, they can only view /admin/login.
-  // The middleware handles this, but server side safety is good.
+  useEffect(() => {
+    if (isLoginPage) return;
+
+    fetch("/api/auth/me")
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        setChecking(false);
+      })
+      .catch(() => router.push("/admin/login"));
+  }, [router, isLoginPage]);
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/admin/login");
+  }
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa]">
+        <p className="text-gray-500">Checking session...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ fontFamily: "sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Admin Top Header */}
-      <header
-        style={{
-          borderBottom: "1px solid #ccc",
-          backgroundColor: "#1e293b",
-          color: "#fff",
-          padding: "10px 20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ fontWeight: "bold", fontSize: "1.1rem" }}>
-          School Portal <span style={{ color: "#38bdf8", fontSize: "0.9rem" }}>ADMIN PANEL</span>
+    <div className="min-h-screen flex bg-[#f8f9fa]">
+      <aside className="w-64 bg-[#1e3a5f] text-white flex flex-col">
+        <div className="px-6 py-5 text-xl font-bold border-b border-white/10">
+          🏫 Admin Panel
         </div>
-        {user ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <span>Logged in as: <strong>{user.username}</strong></span>
-            <Link href="/" style={{ color: "#38bdf8", textDecoration: "none" }}>View Site</Link>
-          </div>
-        ) : (
-          <Link href="/" style={{ color: "#38bdf8", textDecoration: "none" }}>Back to Site</Link>
-        )}
-      </header>
-
-      {/* Main Admin Wrapper */}
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Sidebar (Render only if user is logged in) */}
-        {user && (
-          <aside
-            style={{
-              width: "220px",
-              backgroundColor: "#0f172a",
-              color: "#cbd5e1",
-              padding: "20px 10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-            }}
-          >
-            <Link href="/admin/dashboard" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              📊 Dashboard
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                pathname === item.href ? "bg-[#d4a017] text-[#1e3a5f] font-semibold" : "hover:bg-white/10"
+              }`}
+            >
+              <span>{item.icon}</span>
+              {item.label}
             </Link>
-            <Link href="/admin/notices" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              📌 Manage Notices
-            </Link>
-            <Link href="/admin/events" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              📅 Manage Events
-            </Link>
-            <Link href="/admin/blog" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              📝 Manage Blogs
-            </Link>
-            <Link href="/admin/gallery" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              🖼️ Manage Gallery
-            </Link>
-            <Link href="/admin/inquiries" style={{ color: "#fff", textDecoration: "none", padding: "8px", borderRadius: "4px" }}>
-              ✉️ View Inquiries
-            </Link>
-            
-            <div style={{ marginTop: "auto", paddingTop: "20px", borderTop: "1px solid #334155" }}>
-              {/* Form submit logout for secure action */}
-              <form action="/api/auth/logout" method="POST">
-                <button
-                  type="submit"
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#b91c1c",
-                    color: "#fff",
-                    border: "none",
-                    padding: "8px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontWeight: "bold",
-                  }}
-                >
-                  🚪 Logout
-                </button>
-              </form>
-            </div>
-          </aside>
-        )}
-
-        {/* Admin Content Panel */}
-        <main style={{ flex: 1, padding: "20px", backgroundColor: "#f8fafc" }}>
-          {children}
-        </main>
-      </div>
+          ))}
+        </nav>
+        <button
+          onClick={handleLogout}
+          className="mx-3 mb-4 px-3 py-2 text-sm rounded-md bg-white/10 hover:bg-white/20 transition-colors text-left"
+        >
+          🚪 Logout
+        </button>
+      </aside>
+      <main className="flex-1 p-8">{children}</main>
     </div>
   );
 }
