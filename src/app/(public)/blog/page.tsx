@@ -2,64 +2,32 @@ import { db } from "@/db/db";
 import { blogs } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import Link from "next/link";
-import React from "react";
 
 export const revalidate = 0;
 
-export default async function PublicBlogPage() {
-  const blogsList = await db
-    .select()
-    .from(blogs)
-    .orderBy(desc(blogs.createdAt));
+export default async function BlogPage() {
+  const allBlogs = await db.select().from(blogs).orderBy(desc(blogs.createdAt));
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h1>School Blog & News</h1>
-      <p style={{ color: "#666", marginBottom: "30px" }}>
-        Read articles, stories, achievements, and academic insights from our teachers and staff.
-      </p>
+    <div>
+      <h1 className="text-3xl font-bold text-[#1e3a5f] mb-8 border-b-4 border-[#d4a017] inline-block pb-2">
+        Blog & News
+      </h1>
 
-      {blogsList.length === 0 ? (
-        <p>No blog posts published yet.</p>
+      {allBlogs.length === 0 ? (
+        <p className="text-gray-500">No blog posts yet.</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
-          {blogsList.map((blog) => (
-            <article
+        <div className="grid gap-6 md:grid-cols-2">
+          {allBlogs.map((blog) => (
+            <Link
               key={blog.id}
-              style={{
-                borderBottom: "1px solid #eee",
-                paddingBottom: "25px",
-              }}
+              href={`/blog/${blog.id}`}
+              className="block bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
             >
-              <h2 style={{ marginBottom: "10px" }}>
-                <Link
-                  href={`/blog/${blog.id}`}
-                  style={{ textDecoration: "none", color: "#0066cc" }}
-                >
-                  {blog.title}
-                </Link>
-              </h2>
-              <div style={{ fontSize: "0.85rem", color: "#888", marginBottom: "12px" }}>
-                Written by: <strong>{blog.author}</strong> | Posted on: {blog.createdAt}
-              </div>
-              <p style={{ color: "#333", lineHeight: "1.6" }}>
-                {blog.content.length > 200
-                  ? `${blog.content.substring(0, 200)}...`
-                  : blog.content}
-              </p>
-              <Link
-                href={`/blog/${blog.id}`}
-                style={{
-                  display: "inline-block",
-                  color: "#0066cc",
-                  fontWeight: "bold",
-                  textDecoration: "none",
-                  fontSize: "0.9rem",
-                }}
-              >
-                Read More →
-              </Link>
-            </article>
+              <h2 className="text-lg font-semibold text-[#1e3a5f]">{blog.title}</h2>
+              <p className="text-sm text-gray-600 mt-2 line-clamp-3">{blog.content}</p>
+              <p className="text-xs text-gray-400 mt-3">By {blog.author} • {blog.createdAt}</p>
+            </Link>
           ))}
         </div>
       )}

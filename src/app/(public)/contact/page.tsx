@@ -1,155 +1,78 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
-  const [status, setStatus] = useState<{ type: "success" | "error" | null; msg: string }>({
-    type: null,
-    msg: "",
-  });
-  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitting(true);
-    setStatus({ type: null, msg: "" });
-
+    setStatus("sending");
     try {
       const res = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
       });
-
-      const data = await res.json();
-
-      if (res.status === 200 && data.success) {
-        setStatus({
-          type: "success",
-          msg: "Your inquiry has been submitted successfully! We will get back to you shortly.",
-        });
-        setFormData({ name: "", email: "", subject: "", message: "" });
-      } else {
-        setStatus({
-          type: "error",
-          msg: data.error || "Failed to submit inquiry. Please try again.",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus({
-        type: "error",
-        msg: "A network error occurred. Please check your connection and try again.",
-      });
-    } finally {
-      setSubmitting(false);
+      if (!res.ok) throw new Error();
+      setStatus("success");
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      setStatus("error");
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h1>Contact Us</h1>
-      <p style={{ color: "#666", marginBottom: "25px" }}>
-        Have questions about admissions, careers, or school policies? Send us a message!
-      </p>
+    <div className="max-w-xl mx-auto">
+      <h1 className="text-3xl font-bold text-[#1e3a5f] mb-8 border-b-4 border-[#d4a017] inline-block pb-2">
+        Contact Us
+      </h1>
 
-      {status.type && (
-        <div
-          style={{
-            padding: "12px 15px",
-            borderRadius: "4px",
-            marginBottom: "20px",
-            fontWeight: "bold",
-            color: status.type === "success" ? "#15803d" : "#b91c1c",
-            backgroundColor: status.type === "success" ? "#f0fdf4" : "#fef2f2",
-            border: `1px solid ${status.type === "success" ? "#bbf7d0" : "#fecaca"}`,
-          }}
-        >
-          {status.msg}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="name" style={{ fontWeight: "bold" }}>Your Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            required
-            value={formData.name}
-            onChange={handleChange}
-            style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" }}
-          />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="email" style={{ fontWeight: "bold" }}>Email Address</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            value={formData.email}
-            onChange={handleChange}
-            style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" }}
-          />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="subject" style={{ fontWeight: "bold" }}>Subject</label>
-          <input
-            type="text"
-            id="subject"
-            name="subject"
-            required
-            value={formData.subject}
-            onChange={handleChange}
-            style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" }}
-          />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="message" style={{ fontWeight: "bold" }}>Message</label>
-          <textarea
-            id="message"
-            name="message"
-            rows={5}
-            required
-            value={formData.message}
-            onChange={handleChange}
-            style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem", fontFamily: "inherit" }}
-          />
-        </div>
+      <div className="space-y-4">
+        <input
+          type="text"
+          placeholder="Your Name"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-4 py-2"
+          required
+        />
+        <input
+          type="email"
+          placeholder="Your Email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-4 py-2"
+          required
+        />
+        <input
+          type="text"
+          placeholder="Subject"
+          value={form.subject}
+          onChange={(e) => setForm({ ...form, subject: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-4 py-2"
+          required
+        />
+        <textarea
+          placeholder="Your Message"
+          value={form.message}
+          onChange={(e) => setForm({ ...form, message: e.target.value })}
+          className="w-full border border-gray-300 rounded-md px-4 py-2 h-32"
+          required
+        />
 
         <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            backgroundColor: "#0066cc",
-            color: "#fff",
-            padding: "12px",
-            borderRadius: "4px",
-            border: "none",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: submitting ? "not-allowed" : "pointer",
-            marginTop: "10px",
-          }}
+          onClick={handleSubmit}
+          disabled={status === "sending"}
+          className="bg-[#1e3a5f] text-white px-6 py-2 rounded-md hover:bg-[#16304d] transition-colors disabled:opacity-50"
         >
-          {submitting ? "Submitting Inquiry..." : "Submit Inquiry"}
+          {status === "sending" ? "Sending..." : "Send Message"}
         </button>
-      </form>
+
+        {status === "success" && <p className="text-green-600 text-sm">Message sent successfully!</p>}
+        {status === "error" && <p className="text-red-600 text-sm">Something went wrong. Try again.</p>}
+      </div>
     </div>
   );
 }

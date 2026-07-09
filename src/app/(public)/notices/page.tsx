@@ -1,95 +1,54 @@
 import { db } from "@/db/db";
 import { notices } from "@/db/schema";
 import { desc } from "drizzle-orm";
-import React from "react";
 
 export const revalidate = 0;
 
-export default async function PublicNoticesPage() {
-  const noticesList = await db
+export default async function NoticesPage() {
+  const allNotices = await db
     .select()
     .from(notices)
     .orderBy(desc(notices.isPinned), desc(notices.createdAt));
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-      <h1>Official School Notices</h1>
-      <p style={{ color: "#666", marginBottom: "20px" }}>
-        Stay updated with the latest announcements, schedules, and circulars from the administration.
-      </p>
+    <div>
+      <h1 className="text-3xl font-bold text-[#1e3a5f] mb-8 border-b-4 border-[#d4a017] inline-block pb-2">
+        Notices
+      </h1>
 
-      {noticesList.length === 0 ? (
-        <p>No notices posted at this time.</p>
+      {allNotices.length === 0 ? (
+        <p className="text-gray-500">No notices posted yet.</p>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {noticesList.map((notice) => (
+        <div className="space-y-4">
+          {allNotices.map((notice) => (
             <div
               key={notice.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "8px",
-                padding: "20px",
-                backgroundColor: notice.isPinned ? "#fffdf3" : "#fff",
-                borderColor: notice.isPinned ? "#fcd34d" : "#ddd",
-                position: "relative",
-              }}
+              className={`rounded-lg border p-5 shadow-sm ${
+                notice.isPinned
+                  ? "bg-[#fff8e6] border-[#d4a017]"
+                  : "bg-white border-gray-200"
+              }`}
             >
-              {notice.isPinned && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "10px",
-                    right: "15px",
-                    backgroundColor: "#fcd34d",
-                    color: "#78350f",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    fontSize: "0.75rem",
-                    fontWeight: "bold",
-                  }}
-                >
-                  PINNED
-                </span>
-              )}
-              <h2 style={{ marginTop: 0, paddingRight: "70px", fontSize: "1.3rem" }}>
-                {notice.title}
-              </h2>
-              <p style={{ whiteSpace: "pre-line", color: "#333", fontSize: "1rem" }}>
-                {notice.content}
-              </p>
-
-              {notice.attachmentUrl && (
-                <div style={{ marginTop: "15px" }}>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#1e3a5f]">
+                    {notice.isPinned && <span className="mr-2">📌</span>}
+                    {notice.title}
+                  </h2>
+                  <p className="text-gray-600 mt-1 text-sm">{notice.content}</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {notice.createdAt}
+                  </p>
+                </div>
+                {notice.attachmentUrl && (
                   <a
                     href={notice.attachmentUrl}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-block",
-                      backgroundColor: "#0066cc",
-                      color: "#fff",
-                      padding: "8px 12px",
-                      borderRadius: "4px",
-                      textDecoration: "none",
-                      fontSize: "0.85rem",
-                      fontWeight: "bold",
-                    }}
+                    className="shrink-0 bg-[#1e3a5f] text-white text-sm px-3 py-1.5 rounded-md hover:bg-[#16304d] transition-colors"
                   >
-                    📎 Download Attachment
+                    Download
                   </a>
-                </div>
-              )}
-
-              <div
-                style={{
-                  marginTop: "15px",
-                  fontSize: "0.8rem",
-                  color: "#888",
-                  borderTop: "1px solid #eee",
-                  paddingTop: "8px",
-                }}
-              >
-                Posted on: {notice.createdAt}
+                )}
               </div>
             </div>
           ))}
