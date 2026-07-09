@@ -1,35 +1,34 @@
-import React from "react";
-
 export default function AboutPage() {
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", lineHeight: "1.6" }}>
-      <h1>About Our School</h1>
-      <p style={{ fontSize: "1.1rem" }}>
-        Established in 1998, our institution has been at the forefront of providing exceptional academic 
-        and holistic education to students from Kindergarten to High School.
-      </p>
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold text-[#1e3a5f] mb-8 border-b-4 border-[#d4a017] inline-block pb-2">
+        About Our School
+      </h1>
 
-      <h2>Our Vision</h2>
-      <p>
-        To foster a dynamic learning community where every student is inspired to reach their full 
-        intellectual, emotional, and social potential.
-      </p>
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold text-[#1e3a5f] mb-3">Our Mission</h2>
+        <p className="text-gray-700 leading-relaxed">
+          We are committed to providing quality education that nurtures curiosity, builds character,
+          and prepares students to become responsible, thoughtful leaders of tomorrow.
+        </p>
+      </section>
 
-      <h2>Our Mission</h2>
-      <ul>
-        <li>Deliver a balanced and challenging curriculum.</li>
-        <li>Encourage creative thinking, collaboration, and ethical behavior.</li>
-        <li>Provide state-of-the-art facilities for sports, science, and the arts.</li>
-        <li>Build strong partnerships between teachers, students, parents, and the community.</li>
-      </ul>
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold text-[#1e3a5f] mb-3">Our Vision</h2>
+        <p className="text-gray-700 leading-relaxed">
+          To be a center of excellence in education, fostering innovation, integrity, and a lifelong
+          love of learning in every student who walks through our doors.
+        </p>
+      </section>
 
-      <h2>Leadership Message</h2>
-      <blockquote style={{ borderLeft: "4px solid #0066cc", paddingLeft: "15px", fontStyle: "italic", margin: "20px 0" }}>
-        "At our school, we do not just teach textbooks; we cultivate character, encourage curiosity, and 
-        inspire students to become lifelong learners who can contribute positively to a changing world."
-        <br />
-        <span style={{ fontWeight: "bold", fontSize: "0.9rem", color: "#555" }}>— Dr. Sarah Miller, Principal</span>
-      </blockquote>
+      <section className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-[#1e3a5f] mb-3">Principal's Message</h2>
+        <p className="text-gray-700 leading-relaxed italic">
+          "Every child who joins our school family becomes part of a community that believes in their
+          potential. Our doors are always open — to students, parents, and anyone who shares our
+          passion for education."
+        </p>
+      </section>
     </div>
   );
 }

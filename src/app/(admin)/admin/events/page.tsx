@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-interface Event {
+type Event = {
   id: number;
   title: string;
   description: string;
@@ -10,44 +10,26 @@ interface Event {
   location: string;
   imageUrl: string | null;
   createdAt: string;
-}
+};
 
-export default function AdminEventsPage() {
+const emptyForm = { id: null as number | null, title: "", description: "", date: "", location: "", imageUrl: "" };
+
+export default function EventsManagerPage() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState(emptyForm);
+  const [loading, setLoading] = useState(false);
 
-  // Form state
-  const [form, setForm] = useState({
-    id: null as number | null,
-    title: "",
-    description: "",
-    date: "",
-    location: "",
-    imageUrl: "",
-  });
-
-  const fetchEvents = () => {
-    fetch("/api/events")
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  };
+  async function loadEvents() {
+    const res = await fetch("/api/events");
+    const data = await res.json();
+    setEvents(data);
+  }
 
   useEffect(() => {
-    fetchEvents();
+    loadEvents();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleEdit = (event: Event) => {
+  function startEdit(event: Event) {
     setForm({
       id: event.id,
       title: event.title,
@@ -56,209 +38,161 @@ export default function AdminEventsPage() {
       location: event.location,
       imageUrl: event.imageUrl || "",
     });
-  };
+  }
 
-  const handleReset = () => {
-    setForm({
-      id: null,
-      title: "",
-      description: "",
-      date: "",
-      location: "",
-      imageUrl: "",
-    });
-  };
+  function resetForm() {
+    setForm(emptyForm);
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const isEdit = form.id !== null;
-    const url = "/api/events";
-    const method = isEdit ? "PUT" : "POST";
+    setLoading(true);
 
-    try {
-      const res = await fetch(url, {
-        method,
+    const payload = {
+      title: form.title,
+      description: form.description,
+      date: form.date,
+      location: form.location,
+      imageUrl: form.imageUrl || null,
+    };
+
+    if (form.id) {
+      await fetch(`/api/events/${form.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-
-      const data = await res.json();
-      if (res.status === 200) {
-        fetchEvents();
-        handleReset();
-      } else {
-        alert(data.error || "Failed to save event.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Network error occurred.");
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
-
-    try {
-      const res = await fetch(`/api/events?id=${id}`, {
-        method: "DELETE",
+    } else {
+      await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      if (res.status === 200) {
-        fetchEvents();
-      }
-    } catch (err) {
-      console.error(err);
     }
-  };
+
+    resetForm();
+    await loadEvents();
+    setLoading(false);
+  }
+
+  async function handleDelete(id: number) {
+    if (!confirm("Delete this event?")) return;
+    await fetch(`/api/events/${id}`, { method: "DELETE" });
+    await loadEvents();
+  }
 
   return (
-    <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
-      {/* List Panel */}
-      <div style={{ flex: 2, minWidth: "300px" }}>
-        <h1>Manage Events</h1>
-        {loading ? (
-          <p>Loading events...</p>
-        ) : events.length === 0 ? (
-          <p>No events found.</p>
-        ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "#fff", border: "1px solid #ddd" }}>
-            <thead>
-              <tr style={{ backgroundColor: "#f1f5f9", textAlign: "left" }}>
-                <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Title</th>
-                <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Date</th>
-                <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Location</th>
-                <th style={{ padding: "10px", borderBottom: "1px solid #ddd" }}>Actions</th>
+    <div>
+      <h1 className="text-2xl font-bold text-[#1e3a5f] mb-8">Manage Events</h1>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Form */}
+        <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm h-fit">
+          <h2 className="text-lg font-semibold text-[#1e3a5f] mb-4">
+            {form.id ? "Edit Event" : "Add Event"}
+          </h2>
+          <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Title"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              required
+            />
+            <textarea
+              placeholder="Description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm h-24"
+              required
+            />
+            <input
+              type="date"
+              value={form.date}
+              onChange={(e) => setForm({ ...form, date: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Location"
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Image URL (optional)"
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+            />
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="bg-[#1e3a5f] text-white px-4 py-2 rounded-md text-sm hover:bg-[#16304d] transition-colors disabled:opacity-50"
+              >
+                {form.id ? "Update" : "Add"} Event
+              </button>
+              {form.id && (
+                <button
+                  onClick={resetForm}
+                  className="px-4 py-2 rounded-md text-sm border border-gray-300 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-[#f8f9fa] text-left text-gray-600">
+              <tr>
+                <th className="px-4 py-3">Title</th>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Location</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {events.map((event) => (
-                <tr key={event.id} style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: "10px" }}><strong>{event.title}</strong></td>
-                  <td style={{ padding: "10px", fontSize: "0.9rem" }}>{event.date}</td>
-                  <td style={{ padding: "10px", fontSize: "0.9rem" }}>{event.location}</td>
-                  <td style={{ padding: "10px", display: "flex", gap: "5px" }}>
+                <tr key={event.id} className="border-t border-gray-100">
+                  <td className="px-4 py-3 font-medium text-gray-800">{event.title}</td>
+                  <td className="px-4 py-3 text-gray-500">{event.date}</td>
+                  <td className="px-4 py-3 text-gray-500">{event.location}</td>
+                  <td className="px-4 py-3 space-x-2">
                     <button
-                      onClick={() => handleEdit(event)}
-                      style={{ padding: "4px 8px", backgroundColor: "#f59e0b", color: "#fff", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                      onClick={() => startEdit(event)}
+                      className="text-[#1e3a5f] hover:underline"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(event.id)}
-                      style={{ padding: "4px 8px", backgroundColor: "#ef4444", color: "#fff", border: "none", borderRadius: "3px", cursor: "pointer" }}
+                      className="text-red-600 hover:underline"
                     >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
+              {events.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                    No events yet.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-        )}
-      </div>
-
-      {/* Editor Form Panel */}
-      <div style={{ flex: 1, minWidth: "250px", backgroundColor: "#fff", padding: "20px", border: "1px solid #ddd", borderRadius: "6px", alignSelf: "flex-start" }}>
-        <h2>{form.id ? "Edit Event" : "Add Event"}</h2>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label htmlFor="title" style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Event Title</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              required
-              value={form.title}
-              onChange={handleChange}
-              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label htmlFor="description" style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              required
-              value={form.description}
-              onChange={handleChange}
-              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontFamily: "inherit" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label htmlFor="date" style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Date</label>
-            <input
-              type="date"
-              id="date"
-              name="date"
-              required
-              value={form.date}
-              onChange={handleChange}
-              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label htmlFor="location" style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Location</label>
-            <input
-              type="text"
-              id="location"
-              name="location"
-              required
-              value={form.location}
-              onChange={handleChange}
-              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label htmlFor="imageUrl" style={{ fontWeight: "bold", fontSize: "0.9rem" }}>Image URL (Optional)</label>
-            <input
-              type="text"
-              id="imageUrl"
-              name="imageUrl"
-              value={form.imageUrl}
-              onChange={handleChange}
-              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
-            />
-          </div>
-
-          <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-            <button
-              type="submit"
-              style={{
-                flex: 1,
-                padding: "10px",
-                backgroundColor: "#10b981",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                fontWeight: "bold",
-                cursor: "pointer"
-              }}
-            >
-              Save Event
-            </button>
-            {form.id && (
-              <button
-                type="button"
-                onClick={handleReset}
-                style={{
-                  padding: "10px",
-                  backgroundColor: "#6b7280",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  fontWeight: "bold",
-                  cursor: "pointer"
-                }}
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

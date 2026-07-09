@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -22,76 +22,54 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ username, password }),
       });
 
-      const data = await res.json();
-
-      if (res.status === 200 && data.success) {
-        // Redirect to admin dashboard on success
-        router.push("/admin/dashboard");
-        router.refresh();
-      } else {
-        setError(data.error || "Invalid username or password.");
+      if (!res.ok) {
+        setError("Invalid username or password.");
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setError("A connection error occurred. Please try again.");
-    } finally {
+
+      router.push("/admin/dashboard");
+    } catch {
+      setError("Something went wrong. Try again.");
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: "400px", margin: "80px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "6px", backgroundColor: "#fff" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Admin Login</h2>
-      
-      {error && (
-        <div style={{ padding: "10px", backgroundColor: "#fee2e2", border: "1px solid #fca5a5", color: "#b91c1c", borderRadius: "4px", marginBottom: "15px", fontSize: "0.9rem" }}>
-          {error}
-        </div>
-      )}
+    <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] px-4">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-[#1e3a5f] mb-1 text-center">Admin Login</h1>
+        <p className="text-sm text-gray-500 mb-6 text-center">Sign in to manage the school website</p>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="username" style={{ fontWeight: "bold" }}>Username</label>
+        <div className="space-y-4">
           <input
             type="text"
-            id="username"
-            required
+            placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" }}
+            className="w-full border border-gray-300 rounded-md px-4 py-2"
+            required
           />
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label htmlFor="password" style={{ fontWeight: "bold" }}>Password</label>
           <input
             type="password"
-            id="password"
-            required
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", fontSize: "1rem" }}
+            className="w-full border border-gray-300 rounded-md px-4 py-2"
+            required
           />
-        </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            backgroundColor: "#1e293b",
-            color: "#fff",
-            padding: "10px",
-            border: "none",
-            borderRadius: "4px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            cursor: loading ? "not-allowed" : "pointer",
-            marginTop: "10px"
-          }}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-[#1e3a5f] text-white py-2 rounded-md hover:bg-[#16304d] transition-colors disabled:opacity-50"
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
