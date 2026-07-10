@@ -14,10 +14,9 @@ This file guides developers and AI assistants on how to build, run, and write co
 * Define tables in `src/db/schema.ts`.
 * Always use Drizzle ORM syntax to read/write data. Avoid raw SQL.
 
-### 2. Styling (Vanilla CSS / CSS Modules)
-* **No Tailwind CSS**: Do not write utility classes.
-* Style components using **CSS Modules** (`*.module.css`) to prevent class collisions.
-* Use `src/app/globals.css` only for global design tokens, variables, and resets.
+### 2. Styling (Tailwind CSS & shadcn/ui)
+* **Tailwind & shadcn/ui**: The admin dashboard is built with Tailwind CSS utility classes and shadcn/ui components.
+* **Component Styling**: For new custom UI elements, use Tailwind utility classes or CSS Modules where appropriate. Keep theme settings consistent with the variables in `src/app/globals.css`.
 
 ### 3. Security (Admin Routing)
 * Admin page routes (`/admin/*`) and API writing endpoints (`POST`, `PUT`, `DELETE` to `/api/*`) must be guarded.
