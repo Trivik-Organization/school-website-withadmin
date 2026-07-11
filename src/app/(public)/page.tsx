@@ -45,7 +45,7 @@ export default async function HomePage() {
               <Item
                 key={n.id}
                 title={`${n.title} ${n.isPinned ? "📌" : ""}`}
-                sub={n.createdAt}
+                sub={n.createdAt ?? ""}
               />
             ))
           )}

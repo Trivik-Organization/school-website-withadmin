@@ -7,8 +7,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
+    const offset = (page - 1) * limit;
 
     let whereClause = undefined;
     if (search) {
@@ -29,13 +30,15 @@ export async function GET(request: NextRequest) {
       .from(blogs)
       .where(whereClause);
     const total = countResult?.count ?? 0;
+    const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
-      blogs: data,
+      data,
       pagination: {
         total,
+        page,
         limit,
-        offset,
+        totalPages,
       },
     });
   } catch (error) {
