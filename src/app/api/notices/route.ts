@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/db";
 import { notices } from "@/db/schema";
-import { eq, like, and, desc } from "drizzle-orm";
+import { eq, like, and, desc, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pinnedParam = searchParams.get("pinned");
     const searchParam = searchParams.get("search");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
+    const offset = (page - 1) * limit;
 
     const conditions = [];
 
@@ -26,9 +29,26 @@ export async function GET(request: NextRequest) {
       .select()
       .from(notices)
       .where(whereClause)
-      .orderBy(desc(notices.isPinned), desc(notices.createdAt));
+      .orderBy(desc(notices.isPinned), desc(notices.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-    return NextResponse.json(data);
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notices)
+      .where(whereClause);
+    const total = countResult?.count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return NextResponse.json({
+      data,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      }
+    });
   } catch (error) {
     console.error("Notices GET error:", error);
     return NextResponse.json({ error: "Failed to fetch notices" }, { status: 500 });

@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/db";
 import { events } from "@/db/schema";
-import { eq, gte, lt, asc, desc } from "drizzle-orm";
+import { eq, gte, lt, asc, desc, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get("filter"); // 'upcoming' | 'past' | null
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "5", 10);
+    const offset = (page - 1) * limit;
 
     const todayStr = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
@@ -21,9 +24,30 @@ export async function GET(request: NextRequest) {
       order = desc(events.date); // Most recent past events first
     }
 
-    const data = await db.select().from(events).where(whereClause).orderBy(order);
+    const data = await db
+      .select()
+      .from(events)
+      .where(whereClause)
+      .orderBy(order)
+      .limit(limit)
+      .offset(offset);
 
-    return NextResponse.json(data);
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(events)
+      .where(whereClause);
+    const total = countResult?.count ?? 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return NextResponse.json({
+      data,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+      }
+    });
   } catch (error) {
     console.error("Events GET error:", error);
     return NextResponse.json({ error: "Failed to fetch events" }, { status: 500 });
