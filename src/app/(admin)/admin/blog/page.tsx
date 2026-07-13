@@ -11,7 +11,13 @@ type Blog = {
   createdAt: string;
 };
 
-const emptyForm = { id: null as number | null, title: "", content: "", author: "Admin", imageUrl: "" };
+const emptyForm = {
+  id: null as number | null,
+  title: "",
+  content: "",
+  author: "Admin",
+  imageUrl: "",
+};
 
 export default function BlogManagerPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
@@ -19,7 +25,7 @@ export default function BlogManagerPage() {
   const [loading, setLoading] = useState(false);
 
   async function loadBlogs() {
-    const res = await fetch("/api/blogs");
+    const res = await fetch("/api/blog");
     const data = await res.json();
     setBlogs(data.blogs);
   }
@@ -54,13 +60,13 @@ export default function BlogManagerPage() {
     };
 
     if (form.id) {
-      await fetch(`/api/blogs/${form.id}`, {
+      await fetch(`/api/blog/${form.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
     } else {
-      await fetch("/api/blogs", {
+      await fetch("/api/blog", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -74,13 +80,15 @@ export default function BlogManagerPage() {
 
   async function handleDelete(id: number) {
     if (!confirm("Delete this blog post?")) return;
-    await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+    await fetch(`/api/blog/${id}`, { method: "DELETE" });
     await loadBlogs();
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[#1e3a5f] mb-8">Manage Blog Posts</h1>
+      <h1 className="text-2xl font-bold text-[#1e3a5f] mb-8">
+        Manage Blog Posts
+      </h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Form */}
@@ -154,7 +162,9 @@ export default function BlogManagerPage() {
             <tbody>
               {blogs.map((blog) => (
                 <tr key={blog.id} className="border-t border-gray-100">
-                  <td className="px-4 py-3 font-medium text-gray-800">{blog.title}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {blog.title}
+                  </td>
                   <td className="px-4 py-3 text-gray-500">{blog.author}</td>
                   <td className="px-4 py-3 text-gray-500">{blog.createdAt}</td>
                   <td className="px-4 py-3 space-x-2">
@@ -175,7 +185,10 @@ export default function BlogManagerPage() {
               ))}
               {blogs.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                  <td
+                    colSpan={4}
+                    className="px-4 py-6 text-center text-gray-400"
+                  >
                     No blog posts yet.
                   </td>
                 </tr>

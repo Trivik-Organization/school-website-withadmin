@@ -6,7 +6,8 @@ export async function GET() {
     info: {
       title: "School Website API",
       version: "1.0.0",
-      description: "REST API endpoints for the public school website and admin management dashboard.",
+      description:
+        "REST API endpoints for the public school website and admin management dashboard.",
     },
     servers: [
       {
@@ -18,7 +19,8 @@ export async function GET() {
       "/api/auth/login": {
         post: {
           summary: "Admin Login",
-          description: "Authenticates admin and returns a secure HTTP-only session cookie.",
+          description:
+            "Authenticates admin and returns a secure HTTP-only session cookie.",
           requestBody: {
             required: true,
             content: {
@@ -40,7 +42,8 @@ export async function GET() {
               headers: {
                 "Set-Cookie": {
                   schema: { type: "string" },
-                  description: "HTTP-only session cookie named `school_admin_session`",
+                  description:
+                    "HTTP-only session cookie named `school_admin_session`",
                 },
               },
               content: {
@@ -80,7 +83,10 @@ export async function GET() {
                     type: "object",
                     properties: {
                       success: { type: "boolean", example: true },
-                      message: { type: "string", example: "Logged out successfully" },
+                      message: {
+                        type: "string",
+                        example: "Logged out successfully",
+                      },
                     },
                   },
                 },
@@ -123,7 +129,8 @@ export async function GET() {
       "/api/upload": {
         post: {
           summary: "Upload File",
-          description: "Uploads an attachment PDF or media image to local disk (`public/uploads/`).",
+          description:
+            "Uploads an attachment PDF or media image to local disk (`public/uploads/`).",
           security: [{ CookieAuth: [] }],
           requestBody: {
             required: true,
@@ -148,7 +155,10 @@ export async function GET() {
                     type: "object",
                     properties: {
                       success: { type: "boolean", example: true },
-                      url: { type: "string", example: "/uploads/1720235941-23849102.pdf" },
+                      url: {
+                        type: "string",
+                        example: "/uploads/1720235941-23849102.pdf",
+                      },
                       name: { type: "string", example: "science-fair.pdf" },
                       size: { type: "integer", example: 10452 },
                       mimeType: { type: "string", example: "application/pdf" },
@@ -165,7 +175,8 @@ export async function GET() {
       "/api/notices": {
         get: {
           summary: "Get Notices list",
-          description: "Retrieve a list of notices. Sorted by pinned status and creation date.",
+          description:
+            "Retrieve a list of notices. Sorted by pinned status and creation date.",
           parameters: [
             {
               name: "pinned",
@@ -208,8 +219,15 @@ export async function GET() {
                   type: "object",
                   properties: {
                     title: { type: "string", example: "PTA Meeting" },
-                    content: { type: "string", example: "Details about parent meeting" },
-                    attachmentUrl: { type: "string", nullable: true, example: "/uploads/file.pdf" },
+                    content: {
+                      type: "string",
+                      example: "Details about parent meeting",
+                    },
+                    attachmentUrl: {
+                      type: "string",
+                      nullable: true,
+                      example: "/uploads/file.pdf",
+                    },
                     isPinned: { type: "boolean", example: true },
                   },
                   required: ["title", "content"],
@@ -349,7 +367,11 @@ export async function GET() {
                   properties: {
                     title: { type: "string" },
                     description: { type: "string" },
-                    date: { type: "string", format: "date", example: "2026-08-15" },
+                    date: {
+                      type: "string",
+                      format: "date",
+                      example: "2026-08-15",
+                    },
                     location: { type: "string" },
                     imageUrl: { type: "string", nullable: true },
                   },
@@ -418,20 +440,33 @@ export async function GET() {
           summary: "Delete Event",
           security: [{ CookieAuth: [] }],
           parameters: [
-            { name: "id", in: "query", required: true, schema: { type: "integer" } },
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             200: { description: "Event deleted." },
           },
         },
       },
-      "/api/blogs": {
+      "/api/blog": {
         get: {
           summary: "Get Blog Posts list",
           parameters: [
             { name: "search", in: "query", schema: { type: "string" } },
-            { name: "limit", in: "query", schema: { type: "integer", default: 10 } },
-            { name: "offset", in: "query", schema: { type: "integer", default: 0 } },
+            {
+              name: "limit",
+              in: "query",
+              schema: { type: "integer", default: 10 },
+            },
+            {
+              name: "offset",
+              in: "query",
+              schema: { type: "integer", default: 0 },
+            },
           ],
           responses: {
             200: {
@@ -526,18 +561,28 @@ export async function GET() {
           summary: "Delete Blog Post",
           security: [{ CookieAuth: [] }],
           parameters: [
-            { name: "id", in: "query", required: true, schema: { type: "integer" } },
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             200: { description: "Blog post deleted." },
           },
         },
       },
-      "/api/blogs/{id}": {
+      "/api/blog/{id}": {
         get: {
           summary: "Get Single Blog Post",
           parameters: [
-            { name: "id", in: "path", required: true, schema: { type: "integer" } },
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             200: {
@@ -556,7 +601,11 @@ export async function GET() {
         get: {
           summary: "Get Gallery media",
           parameters: [
-            { name: "type", in: "query", schema: { type: "string", enum: ["photo", "video"] } },
+            {
+              name: "type",
+              in: "query",
+              schema: { type: "string", enum: ["photo", "video"] },
+            },
             { name: "category", in: "query", schema: { type: "string" } },
           ],
           responses: {
@@ -599,10 +648,16 @@ export async function GET() {
         },
         delete: {
           summary: "Delete Gallery Media",
-          description: "Remove media metadata and delete the local file if applicable.",
+          description:
+            "Remove media metadata and delete the local file if applicable.",
           security: [{ CookieAuth: [] }],
           parameters: [
-            { name: "id", in: "query", required: true, schema: { type: "integer" } },
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             200: { description: "Media deleted." },
@@ -677,7 +732,12 @@ export async function GET() {
           summary: "Delete Inquiry",
           security: [{ CookieAuth: [] }],
           parameters: [
-            { name: "id", in: "query", required: true, schema: { type: "integer" } },
+            {
+              name: "id",
+              in: "query",
+              required: true,
+              schema: { type: "integer" },
+            },
           ],
           responses: {
             200: { description: "Inquiry deleted." },

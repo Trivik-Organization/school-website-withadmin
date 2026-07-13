@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-interface Inquiry {
+type Inquiry = {
   id: number;
   name: string;
   email: string;
@@ -10,135 +10,81 @@ interface Inquiry {
   message: string;
   isRead: boolean;
   createdAt: string;
-}
+};
 
-export default function AdminInquiriesPage() {
+export default function InquiriesManagerPage() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetchInquiries = () => {
-    fetch("/api/inquiries")
-      .then((res) => res.json())
-      .then((data) => {
-        setInquiries(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
-  };
+  async function loadInquiries() {
+    const res = await fetch("/api/inquiries");
+    const data = await res.json();
+    setInquiries(Array.isArray(data) ? data : data.inquiries || []);
+  }
 
   useEffect(() => {
-    fetchInquiries();
+    loadInquiries();
   }, []);
 
-  const toggleReadStatus = async (id: number, currentRead: boolean) => {
-    try {
-      const res = await fetch("/api/inquiries", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, isRead: !currentRead }),
-      });
-      if (res.status === 200) {
-        fetchInquiries(); // Refresh
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  async function toggleRead(id: number, current: boolean) {
+    await fetch(`/api/inquiries/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isRead: !current }),
+    });
+    await loadInquiries();
+  }
 
-  const deleteInquiry = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this inquiry?")) return;
-
-    try {
-      const res = await fetch(`/api/inquiries?id=${id}`, {
-        method: "DELETE",
-      });
-      if (res.status === 200) {
-        fetchInquiries(); // Refresh
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  async function handleDelete(id: number) {
+    if (!confirm("Delete this inquiry?")) return;
+    await fetch(`/api/inquiries/${id}`, { method: "DELETE" });
+    await loadInquiries();
+  }
 
   return (
     <div>
-      <h1>Contact Inquiries</h1>
-      <p style={{ color: "#555", marginBottom: "20px" }}>
-        Review messages submitted by visitors through the public Contact page.
-      </p>
+      <h1 className="text-2xl font-bold text-[#1e3a5f] mb-8">Contact Inquiries</h1>
 
-      {loading ? (
-        <p>Loading inquiries...</p>
-      ) : inquiries.length === 0 ? (
-        <p>No inquiries found.</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-          {inquiries.map((inquiry) => (
-            <div
-              key={inquiry.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "6px",
-                padding: "15px",
-                backgroundColor: inquiry.isRead ? "#fff" : "#f1f5f9",
-                borderLeft: inquiry.isRead ? "1px solid #ddd" : "4px solid #3b82f6",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px", flexWrap: "wrap", gap: "10px" }}>
-                <div>
-                  <strong>From:</strong> {inquiry.name} ({inquiry.email})
-                  <br />
-                  <strong>Subject:</strong> {inquiry.subject}
-                </div>
-                <div style={{ fontSize: "0.85rem", color: "#666", textAlign: "right" }}>
-                  Posted: {inquiry.createdAt}
-                  <br />
-                  <span style={{ color: inquiry.isRead ? "green" : "blue", fontWeight: "bold" }}>
-                    {inquiry.isRead ? "Read" : "New / Unread"}
-                  </span>
-                </div>
+      <div className="space-y-4">
+        {inquiries.map((inquiry) => (
+          <div
+            key={inquiry.id}
+            className={`bg-white border rounded-lg p-5 shadow-sm ${
+              inquiry.isRead ? "border-gray-200" : "border-[#d4a017]"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-gray-800">
+                  {inquiry.subject}{" "}
+                  {!inquiry.isRead && (
+                    <span className="ml-2 text-xs bg-[#d4a017] text-white px-2 py-0.5 rounded-full">New</span>
+                  )}
+                </h2>
+                <p className="text-sm text-gray-500">{inquiry.name} • {inquiry.email}</p>
+                <p className="text-sm text-gray-700 mt-2">{inquiry.message}</p>
+                <p className="text-xs text-gray-400 mt-2">{inquiry.createdAt}</p>
               </div>
-
-              <div style={{ padding: "10px", backgroundColor: "#fff", border: "1px solid #eee", borderRadius: "4px", margin: "10px 0", whiteSpace: "pre-line", color: "#333" }}>
-                {inquiry.message}
-              </div>
-
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <div className="flex flex-col gap-2 shrink-0">
                 <button
-                  onClick={() => toggleReadStatus(inquiry.id, inquiry.isRead)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                    backgroundColor: "#fff",
-                    cursor: "pointer",
-                    fontSize: "0.85rem"
-                  }}
+                  onClick={() => toggleRead(inquiry.id, inquiry.isRead)}
+                  className="text-sm text-[#1e3a5f] hover:underline whitespace-nowrap"
                 >
-                  {inquiry.isRead ? "Mark Unread" : "Mark Read"}
+                  Mark as {inquiry.isRead ? "Unread" : "Read"}
                 </button>
                 <button
-                  onClick={() => deleteInquiry(inquiry.id)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "4px",
-                    border: "none",
-                    backgroundColor: "#b91c1c",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: "0.85rem"
-                  }}
+                  onClick={() => handleDelete(inquiry.id)}
+                  className="text-sm text-red-600 hover:underline"
                 >
                   Delete
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+        {inquiries.length === 0 && (
+          <p className="text-gray-400 text-sm">No inquiries yet.</p>
+        )}
+      </div>
     </div>
   );
 }
