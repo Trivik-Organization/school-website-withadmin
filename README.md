@@ -26,7 +26,7 @@ Here is which file is responsible for what:
 * **`/api/upload/`**: File upload handler. Saves images/PDFs directly to the `public/uploads/` directory on the VPS disk.
 * **`/api/notices/`**: CRUD operations for the notice board.
 * **`/api/events/`**: CRUD operations for upcoming and past school events.
-* **`/api/blogs/`**: CRUD operations for news and blogs.
+* **`/api/blog/`**: CRUD operations for news and blog.
 * **`/api/gallery/`**: CRUD operations for media photos and video URLs. Automatically deletes local file assets from disk when their database record is deleted.
 * **`/api/inquiries/`**: Public contact form submissions and admin inquiry view/updates.
 
@@ -74,7 +74,7 @@ These pages share a common admin frame [`src/app/(admin)/admin/layout.tsx`](file
 4. **Events Manager ([`admin/events/page.tsx`](file:///home/ritupandeka/Trivik%20Organization/school-website-withadmin/src/app/(admin)/admin/events/page.tsx))**:
    * *How it works:* Client Component. Displays events table and editor panel, communicating with `/api/events` (POST, PUT, DELETE).
 5. **Blogs Manager ([`admin/blog/page.tsx`](file:///home/ritupandeka/Trivik%20Organization/school-website-withadmin/src/app/(admin)/admin/blog/page.tsx))**:
-   * *How it works:* Client Component. Displays blog posts table and editor panel, communicating with `/api/blogs` (POST, PUT, DELETE).
+   * *How it works:* Client Component. Displays blog posts table and editor panel, communicating with `/api/blog` (POST, PUT, DELETE).
 6. **Gallery Manager ([`admin/gallery/page.tsx`](file:///home/ritupandeka/Trivik%20Organization/school-website-withadmin/src/app/(admin)/admin/gallery/page.tsx))**:
    * *How it works:* Client Component. Handles photo uploads and video URLs.
    * *File Upload flow:* If the media type is set to "Photo" and a file is selected, submitting the form will first send a `POST` request with the file to `/api/upload`. When the API returns the file URL path, the component automatically submits a second request to `/api/gallery` saving the photo metadata.
