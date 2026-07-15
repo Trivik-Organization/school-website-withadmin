@@ -20,6 +20,9 @@
    const links = [
      { href: "/", label: "Home" },
      { href: "/about", label: "About" },
+     { href: "/academics", label: "Academics" },
+     { href: "/admissions", label: "Admissions" },
+     { href: "/school-life", label: "School Life" },
      { href: "/notices", label: "Notices" },
      { href: "/events", label: "Events" },
      { href: "/blog", label: "Blog" },
@@ -44,8 +47,8 @@
       <div className="min-h-screen flex flex-col bg-slate-50">
         {/* Navbar */}
         <header
-          className={`${pathname === "/" ? "fixed w-full" : "sticky"} top-0 z-50 transition-all duration-500 ${
-            pathname === "/" && !scrolled
+          className={`fixed w-full top-0 z-50 transition-all duration-500 ${
+            !scrolled
               ? "bg-transparent"
               : "bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-lg"
           }`}
@@ -72,9 +75,7 @@
 
                 <h2
                   className={`text-2xl font-bold transition-colors duration-300 ${
-                    pathname === "/" && !scrolled
-                      ? "text-white"
-                      :"text-slate-900"
+                    !scrolled ? "text-white" : "text-slate-900"
                   }`}
                 >
                   School Portal
@@ -82,9 +83,7 @@
 
                 <p
                   className={`text-xs transition-colors duration-300 ${
-                    pathname === "/" && !scrolled
-                      ? "text-gray-200"
-                      : "text-gray-600"
+                    !scrolled ? "text-white/70" : "text-gray-600"
                   }`}
                 >
                   Excellence • Discipline • Success
@@ -96,7 +95,7 @@
 
             {/* Navigation */}
 
-            <nav className="hidden lg:flex items-center gap-10">
+            <nav className="hidden xl:flex items-center gap-4 2xl:gap-6 text-sm">
 
               {links.map((link) => (
 
@@ -106,7 +105,7 @@
                   className={`relative font-semibold transition group ${
                     pathname === link.href
                       ? "text-[#D4A017]"
-                      : pathname === "/" && !scrolled
+                      : !scrolled
                         ? "text-white hover:text-[#FFD54F]"
                         : "text-slate-700 hover:text-[#1E3A8A]"
                   }`}
@@ -135,14 +134,20 @@
 
                 <Link
                   href="/admin/login"
-                  className="hidden md:inline-flex bg-[#1E3A8A] hover:bg-[#163172] text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:shadow-lg"
+                  className={`hidden md:inline-flex px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:shadow-lg border ${
+                    !scrolled
+                      ? "border-white/40 text-white hover:bg-white hover:text-[#1E3A8A]"
+                      : "bg-[#1E3A8A] hover:bg-[#163172] text-white border-transparent"
+                  }`}
                 >
                   Admin Login
                 </Link>
 
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="lg:hidden text-3xl text-[#1E3A8A]"
+                  className={`xl:hidden text-3xl transition-colors duration-300 ${
+                    !scrolled ? "text-white" : "text-[#1E3A8A]"
+                  }`}
                 >
                   {menuOpen ? <HiX /> : <HiOutlineMenuAlt3 />}
                 </button>
@@ -155,7 +160,7 @@
 
         </header>
         {menuOpen && (
-          <div className="lg:hidden fixed top-20 left-0 w-full z-40 bg-white border-b shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
+          <div className="xl:hidden fixed top-20 left-0 w-full z-40 bg-white border-b shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
 
             <div className="flex flex-col py-4">
 

@@ -1,6 +1,9 @@
 import { db } from "@/db/db";
 import { notices } from "@/db/schema";
 import { desc } from "drizzle-orm";
+import PageBanner from "@/components/PageBanner";
+import { BsPinAngleFill } from "react-icons/bs";
+import { FaBell, FaDownload } from "react-icons/fa";
 
 export const revalidate = 0;
 
@@ -11,74 +14,90 @@ export default async function NoticesPage() {
     .orderBy(desc(notices.isPinned), desc(notices.createdAt));
 
   return (
-    <div className="space-y-10">
-      {/* Header */}
-      <section className="bg-gradient-to-r from-[#1E3A8A] via-[#2563EB] to-[#3B82F6] rounded-3xl text-white px-8 py-14 shadow-xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">School Notices</h1>
+    <div className="bg-slate-50">
 
-        <p className="text-blue-100 max-w-2xl leading-7">
-          Stay updated with the latest announcements, circulars, examination
-          schedules, holidays and important information from the school.
-        </p>
-      </section>
+      <PageBanner
+        eyebrow="Stay Informed"
+        title="Notice Board"
+        subtitle="Latest announcements, circulars, examination schedules, holidays and important updates from the school."
+      />
 
-      {/* Notices */}
-      {allNotices.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-md border border-gray-200 py-20 text-center">
-          <div className="text-6xl mb-4">📢</div>
-          <h2 className="text-2xl font-semibold text-[#1E3A8A]">
-            No Notices Available
-          </h2>
-          <p className="text-gray-500 mt-2">New notices will appear here.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6">
-          {allNotices.map((notice) => (
-            <div
-              key={notice.id}
-              className={`rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                notice.isPinned
-                  ? "border-amber-300 bg-gradient-to-r from-amber-50 to-white"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              <div className="p-7">
-                <div className="flex justify-between items-start gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
-                      {notice.isPinned && (
-                        <span className="bg-amber-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                          📌 Pinned
-                        </span>
-                      )}
+      <section className="py-20">
+        <div className="w-full max-w-[1200px] mx-auto px-6 sm:px-8 lg:px-10 xl:px-16">
 
-                      <span className="text-sm text-gray-500">
-                        {new Date(notice.createdAt).toLocaleDateString()}
-                      </span>
+          {allNotices.length === 0 ? (
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-lg py-24 text-center">
+              <FaBell className="text-6xl text-slate-200 mx-auto mb-6" />
+              <h2 className="text-2xl font-bold text-slate-900">No Notices Yet</h2>
+              <p className="text-gray-500 mt-2">New notices will appear here.</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {allNotices.map((notice) => (
+                <div
+                  key={notice.id}
+                  className={`bg-white rounded-3xl border shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 overflow-hidden ${
+                    notice.isPinned ? "border-amber-200" : "border-slate-100"
+                  }`}
+                >
+                  {/* Top accent line */}
+                  <div className={`h-1.5 ${notice.isPinned ? "bg-[#F59E0B]" : "bg-[#1E3A8A]"}`} />
+
+                  <div className="p-7 flex flex-col md:flex-row md:items-center gap-6">
+
+                    {/* Date badge */}
+                    <div className="shrink-0 w-20 rounded-2xl overflow-hidden border border-slate-100 shadow-sm text-center">
+                      <div className={`py-1.5 text-white text-xs font-bold uppercase tracking-wider ${notice.isPinned ? "bg-[#F59E0B]" : "bg-[#1E3A8A]"}`}>
+                        {new Date(notice.createdAt).toLocaleString("default", { month: "short" })}
+                      </div>
+                      <div className="py-2 text-2xl font-black text-slate-800">
+                        {new Date(notice.createdAt).getDate()}
+                      </div>
+                      <div className="py-1 bg-slate-50 text-slate-400 text-xs font-semibold">
+                        {new Date(notice.createdAt).getFullYear()}
+                      </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-[#1E3A8A] mb-3">
-                      {notice.title}
-                    </h2>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-3 mb-3">
+                        {notice.isPinned && (
+                          <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full">
+                            <BsPinAngleFill /> PINNED
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-400 font-medium">
+                          {new Date(notice.createdAt).toLocaleDateString("en-IN", {
+                            year: "numeric", month: "long", day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">{notice.title}</h2>
+                      <p className="text-gray-600 leading-7 text-sm">{notice.content}</p>
+                    </div>
 
-                    <p className="text-gray-600 leading-7">{notice.content}</p>
+                    {/* Download */}
+                    {notice.attachmentUrl && (
+                      <div className="shrink-0">
+                        <a
+                          href={notice.attachmentUrl}
+                          target="_blank"
+                          className="inline-flex items-center gap-2 bg-[#1E3A8A] hover:bg-[#163172] text-white px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 hover:shadow-lg"
+                        >
+                          <FaDownload /> Download
+                        </a>
+                      </div>
+                    )}
+
                   </div>
-
-                  {notice.attachmentUrl && (
-                    <a
-                      href={notice.attachmentUrl}
-                      target="_blank"
-                      className="bg-[#1E3A8A] hover:bg-[#163172] text-white px-5 py-3 rounded-xl font-medium transition-all duration-300 hover:shadow-lg"
-                    >
-                      Download
-                    </a>
-                  )}
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
+          )}
+
         </div>
-      )}
+      </section>
+
     </div>
   );
 }
