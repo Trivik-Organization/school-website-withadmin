@@ -44,7 +44,7 @@
       <div className="min-h-screen flex flex-col bg-slate-50">
         {/* Navbar */}
         <header
-          className={`sticky top-0 z-50 transition-all duration-500 ${
+          className={`${pathname === "/" ? "fixed w-full" : "sticky"} top-0 z-50 transition-all duration-500 ${
             pathname === "/" && !scrolled
               ? "bg-transparent"
               : "bg-white/90 backdrop-blur-xl border-b border-slate-200 shadow-lg"
@@ -142,7 +142,7 @@
 
                 <button
                   onClick={() => setMenuOpen(!menuOpen)}
-                  className="md:hidden text-3xl text-[#1E3A8A]"
+                  className="lg:hidden text-3xl text-[#1E3A8A]"
                 >
                   {menuOpen ? <HiX /> : <HiOutlineMenuAlt3 />}
                 </button>
@@ -155,7 +155,7 @@
 
         </header>
         {menuOpen && (
-          <div className="md:hidden bg-white border-b shadow-lg">
+          <div className="lg:hidden fixed top-20 left-0 w-full z-40 bg-white border-b shadow-2xl max-h-[calc(100vh-5rem)] overflow-y-auto">
 
             <div className="flex flex-col py-4">
 

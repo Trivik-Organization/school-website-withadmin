@@ -43,12 +43,12 @@ export default async function HomePage() {
     .select()
     .from(notices)
     .orderBy(desc(notices.createdAt))
-    .limit(3);
+    .limit(5);
   const latestEvents = await db
     .select()
     .from(events)
     .orderBy(desc(events.date))
-    .limit(3);
+    .limit(5);
   const latestBlogs = await db
     .select()
     .from(blogs)
@@ -63,11 +63,9 @@ export default async function HomePage() {
     { icon: IoDocumentTextOutline, title: "School Life", href: "/events" },
   ];
 
-  const featured = latestEvents[0];
-  const rest = latestEvents.slice(1);
 
   return (
-    <div className="bg-slate-50">
+    <div className="bg-slate-50 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px]">
       <AdmissionPopup />
 
       {/* ================= HERO ================= */}
@@ -81,8 +79,8 @@ export default async function HomePage() {
 
         <div className="absolute inset-0 bg-[#0F172A]/70" />
 
-        <div className="relative w-full max-w-[1600px] mx-auto px-6 lg:px-10 xl:px-16 min-h-screen flex items-center">
-          <div className="grid lg:grid-cols-2 gap-16 items-center w-full">
+        <div className="relative w-full max-w-[1600px] mx-auto px-6 lg:px-10 xl:px-16 min-h-screen flex flex-col justify-center pt-32 pb-20 lg:py-0">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center w-full">
 
             <div className="text-white">
               <p className="uppercase tracking-[5px] text-[#D4A017] font-semibold mb-4">
@@ -218,137 +216,95 @@ export default async function HomePage() {
 
       {/* ===================== Notices & Events ===================== */}
       <section className="py-20">
-        <div className="flex items-center justify-between mb-10">
-          <SectionHeading title="Latest News & Events" />
-
-          <Link
-            href="/events"
-            className="hidden md:flex items-center gap-2 text-[#1E40AF] font-semibold hover:text-[#F59E0B] transition"
-          >
-            View All
-            <FaArrowRight />
-          </Link>
-        </div>
-
-
-        <div className="grid lg:grid-cols-3 gap-8">
-
-          {/* Featured Event */}
-          <div className="lg:col-span-2">
-            {featured ? (
+        <div className="grid lg:grid-cols-10 gap-10">
+          {/* Latest Events Column */}
+          <div className="lg:col-span-7">
+            <div className="flex items-center justify-between mb-8">
+              <SectionHeading title="Latest Events" />
               <Link
                 href="/events"
-                className="group relative block h-[420px] rounded-3xl overflow-hidden shadow-2xl"
+                className="flex items-center gap-2 text-[#1E40AF] font-semibold hover:text-[#F59E0B] transition"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#2563EB] to-[#3B82F6]" />
-
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-all" />
-
-                <div className="absolute top-6 left-6 bg-white rounded-2xl px-5 py-3 text-center shadow-xl">
-                  <p className="text-xs font-bold text-[#F59E0B]">
-                    {monthDay(featured.date).month}
-                  </p>
-
-                  <p className="text-3xl font-bold text-[#1E3A8A]">
-                    {monthDay(featured.date).day}
-                  </p>
-                </div>
-
-                <div className="absolute bottom-8 left-8 right-8 text-white">
-                  <p className="uppercase tracking-widest text-[#FBBF24] text-xs mb-2">
-                    Upcoming Event
-                  </p>
-
-                  <h3 className="text-3xl font-bold mb-3">
-                    {featured.title}
-                  </h3>
-
-                  <p className="flex items-center gap-2 text-white/90">
-                    <FaMapMarkerAlt />
-                    {featured.location}
-                  </p>
-
-                  <div className="mt-6 inline-flex items-center gap-2 font-semibold text-[#FBBF24]">
-                    Learn More
-                    <FaArrowRight />
-                  </div>
-                </div>
+                View All
+                <FaArrowRight />
               </Link>
-            ) : (
-              <div className="rounded-3xl border border-dashed border-slate-300 h-[420px] flex items-center justify-center text-slate-500">
-                No events available.
-              </div>
-            )}
+            </div>
+            
+            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 h-[480px] overflow-y-auto space-y-5">
+              {latestEvents.length > 0 ? (
+                latestEvents.map((e) => {
+                  const { month, day } = monthDay(e.date);
+                  return (
+                    <Link
+                      key={e.id}
+                      href="/events"
+                      className="group flex gap-4 bg-white rounded-2xl p-5 shadow-md hover:shadow-xl hover:-translate-y-1 transition"
+                    >
+                      <div className="w-16 h-16 shrink-0 rounded-xl bg-[#1E3A8A] text-white flex flex-col justify-center items-center">
+                        <span className="text-[11px] text-[#FBBF24] font-bold">{month}</span>
+                        <span className="text-xl font-bold">{day}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-800 group-hover:text-[#1E40AF]">
+                          {e.title}
+                        </h4>
+                        <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
+                          <FaMapMarkerAlt />
+                          {e.location}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-500">
+                  No events available.
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Events + Notices */}
-          <div className="space-y-5">
-
-            {rest.map((e) => {
-              const { month, day } = monthDay(e.date);
-
-              return (
-                <Link
-                  key={e.id}
-                  href="/events"
-                  className="group flex gap-4 bg-white rounded-2xl p-5 shadow-md hover:shadow-xl hover:-translate-y-1 transition"
-                >
-                  <div className="w-16 h-16 rounded-xl bg-[#1E3A8A] text-white flex flex-col justify-center items-center">
-                    <span className="text-[11px] text-[#FBBF24] font-bold">
-                      {month}
-                    </span>
-
-                    <span className="text-xl font-bold">
-                      {day}
-                    </span>
-                  </div>
-
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-slate-800 group-hover:text-[#1E40AF]">
-                      {e.title}
-                    </h4>
-
-                    <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
-                      <FaMapMarkerAlt />
-                      {e.location}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
-
-            {latestNotices.slice(0, 2).map((n) => (
+          {/* Notice Board Column */}
+          <div className="lg:col-span-3">
+            <div className="flex items-center justify-between mb-8">
+              <SectionHeading title="Notice Board" />
               <Link
-                key={n.id}
                 href="/notices"
-                className="flex gap-4 items-center bg-amber-50 border border-amber-200 rounded-2xl p-5 hover:bg-white transition"
+                className="flex items-center gap-2 text-[#1E40AF] font-semibold hover:text-[#F59E0B] transition"
               >
-                <div className="w-14 h-14 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center">
-                  <BsPinAngleFill />
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-slate-800">
-                    {n.title}
-                  </h4>
-
-                  <p className="text-xs text-slate-500">
-                    {String(n.createdAt)}
-                  </p>
-                </div>
+                View All
+                <FaArrowRight />
               </Link>
-            ))}
+            </div>
+            
+            <div className="border-2 border-dashed border-slate-300 rounded-3xl p-6 sm:p-8 h-[480px] overflow-y-auto space-y-5">
+              {latestNotices.length > 0 ? (
+                latestNotices.map((n) => (
+                  <Link
+                    key={n.id}
+                    href="/notices"
+                    className="flex gap-4 items-center bg-amber-50 border border-amber-200 rounded-2xl p-5 hover:bg-white transition"
+                  >
+                    <div className="w-14 h-14 shrink-0 rounded-xl bg-[#F59E0B] text-white flex items-center justify-center">
+                      <BsPinAngleFill />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-slate-800">
+                        {n.title}
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        {String(n.createdAt)}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="h-full flex items-center justify-center text-slate-500">
+                  No notices available.
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-
-        <div className="text-center mt-10 md:hidden">
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 bg-[#1E3A8A] text-white px-6 py-3 rounded-xl hover:bg-[#163C91] transition"
-          >
-            View All Events
-            <FaArrowRight />
-          </Link>
         </div>
       </section>
 
@@ -484,27 +440,38 @@ export default async function HomePage() {
       </section>
 
       {/* Facilities */}
-      <section className="py-16">
-        <SectionHeading title="World Class Facilities" />
+      <section className="py-20">
+        <div className="flex flex-col items-center mb-12">
+          <SectionHeading title="Our Facilities" />
+        </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-10">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
-            { icon: FaBookOpen, title: "Library" },
-            { icon: MdOutlineScience, title: "Science Lab" },
-            { icon: FaLaptopCode, title: "Computer Lab" },
-            { icon: FaFutbol, title: "Sports Complex" },
-            { icon: FaBus, title: "Transport" },
-            { icon: FaSchool, title: "Health Centre" },
+            { icon: FaBookOpen, title: "Central Library", desc: "A vast collection of resources and quiet study zones." },
+            { icon: MdOutlineScience, title: "Science Labs", desc: "State-of-the-art equipment for hands-on experiments." },
+            { icon: FaLaptopCode, title: "Tech Center", desc: "Latest computers with high-speed internet and coding software." },
+            { icon: FaFutbol, title: "Sports Complex", desc: "Expansive indoor and outdoor arenas for all major sports." },
+            { icon: FaBus, title: "Transport Fleet", desc: "Safe and reliable GPS-enabled bus fleet for students." },
+            { icon: FaSchool, title: "Health Centre", desc: "On-campus medical staff equipped to handle routine care." },
           ].map((facility) => (
             <div
               key={facility.title}
-              className="group bg-white rounded-3xl shadow-xl p-8 text-center hover:-translate-y-3 duration-300"
+              className="group relative overflow-hidden bg-white border border-slate-100 rounded-[32px] p-10 text-center hover:bg-[#1E3A8A] transition-all duration-500 hover:shadow-2xl hover:shadow-[#1E3A8A]/20 hover:-translate-y-2"
             >
-              <facility.icon className="text-6xl text-[#1E3A8A] mx-auto mb-5 group-hover:text-[#d4a017]" />
-
-              <h3 className="text-xl font-bold text-[#1E3A8A]">
-                {facility.title}
-              </h3>
+              {/* Decorative background circle that glows on hover */}
+              <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-40 h-40 bg-slate-50 rounded-full blur-2xl opacity-50 group-hover:bg-[#2563EB] group-hover:opacity-60 transition-all duration-700 pointer-events-none" />
+              
+              <div className="relative z-10 flex flex-col items-center">
+                <div className="w-20 h-20 rounded-full bg-slate-50 shadow-sm flex items-center justify-center mb-6 text-[#1E3A8A] group-hover:bg-white group-hover:text-[#F59E0B] group-hover:scale-110 group-hover:shadow-lg transition-all duration-500">
+                  <facility.icon className="text-3xl" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-white transition-colors duration-500">
+                  {facility.title}
+                </h3>
+                <p className="text-slate-500 group-hover:text-blue-100 transition-colors duration-500 leading-relaxed">
+                  {facility.desc}
+                </p>
+              </div>
             </div>
           ))}
         </div>
